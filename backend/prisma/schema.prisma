@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AttendanceStatus {
+  CONFIRMED
+  DECLINED
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Guest {
+  id               String           @id @default(uuid())
+  fullName         String
+  phoneNumber      String           @unique
+  email            String?
+  attendanceStatus AttendanceStatus
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  pass             Pass?
+
+  @@index([attendanceStatus])
+  @@index([fullName])
+}
+
+model Pass {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  guestId   String   @unique
+  guest     Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
